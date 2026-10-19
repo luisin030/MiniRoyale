@@ -24,14 +24,13 @@ BIG = pygame.font.SysFont("arial", 34, bold=True)
 
 ARENA = pygame.Rect(120, 40, 860, 620)
 
-# =========================================================
-# NAVEGAÇÃO / COMBATE
-# =========================================================
-
 AGGRO_RANGE = 250
 LANE_AGGRO_WIDTH = 145
 
 RIVER_HALF_HEIGHT = 32
+
+# margem extra onde não haverá colisão entre tropas
+BRIDGE_SAFE_MARGIN = 45
 
 # =========================================================
 # CORES
@@ -46,7 +45,6 @@ DARK_GREEN = (35, 110, 55)
 PURPLE = (150, 80, 200)
 
 WHITE = (245, 245, 245)
-BLACK = (25, 25, 25)
 GRAY = (95, 95, 95)
 
 RIVER = (65, 145, 190)
@@ -89,26 +87,17 @@ def load_image(relative_path, size):
 
 
 KNIGHT_IMG = load_image(
-    os.path.join(
-        "units",
-        "knight.png"
-    ),
+    os.path.join("units", "knight.png"),
     (68, 68)
 )
 
 ARCHER_IMG = load_image(
-    os.path.join(
-        "units",
-        "archer.png"
-    ),
+    os.path.join("units", "archer.png"),
     (68, 68)
 )
 
 GIANT_IMG = load_image(
-    os.path.join(
-        "units",
-        "giant.png"
-    ),
+    os.path.join("units", "giant.png"),
     (92, 92)
 )
 
@@ -144,10 +133,10 @@ KING_RED_IMG = load_image(
     (125, 125)
 )
 
-
 # =========================================================
 # PROJÉTIL
 # =========================================================
+
 
 class Projectile:
 
@@ -163,15 +152,11 @@ class Projectile:
         self.pos = pygame.Vector2(start)
 
         self.target = target
-
         self.damage = damage
-
         self.color = color
-
         self.speed = speed
 
         self.alive = True
-
 
     def update(self, dt):
 
@@ -227,7 +212,6 @@ class Projectile:
                 )
 
             self.alive = False
-
             return
 
         if distance > 0:
@@ -237,7 +221,6 @@ class Projectile:
                 * self.speed
                 * dt
             )
-
 
     def draw(self):
 
@@ -251,10 +234,10 @@ class Projectile:
             6
         )
 
-
 # =========================================================
 # TORRE
 # =========================================================
+
 
 class Tower:
 
@@ -275,31 +258,21 @@ class Tower:
         )
 
         self.team = team
-
-        self.tower_type = (
-            tower_type
-        )
-
+        self.tower_type = tower_type
         self.lane = lane
 
         if tower_type == "king":
 
             self.hp = 1200
-
             self.damage = 32
-
             self.attack_range = 190
-
             self.attack_interval = 0.9
 
         else:
 
             self.hp = 800
-
             self.damage = 26
-
             self.attack_range = 180
-
             self.attack_interval = 0.8
 
         self.max_hp = self.hp
@@ -308,22 +281,16 @@ class Tower:
 
         self.crown_counted = False
 
-
-    def hit(
-        self,
-        damage
-    ):
+    def hit(self, damage):
 
         self.hp = max(
             0,
             self.hp - damage
         )
 
-
     def is_alive(self):
 
         return self.hp > 0
-
 
     def find_target(
         self,
@@ -355,8 +322,7 @@ class Tower:
             )
 
             if (
-                distance
-                <= self.attack_range
+                distance <= self.attack_range
                 and
                 distance < closest_distance
             ):
@@ -366,7 +332,6 @@ class Tower:
                 closest_distance = distance
 
         return closest
-
 
     def update(
         self,
@@ -403,7 +368,6 @@ class Tower:
                 self.attack_interval
             )
 
-
     def draw(self):
 
         if not self.is_alive():
@@ -412,21 +376,15 @@ class Tower:
         if self.tower_type == "king":
 
             if self.team == "blue":
-
                 image = KING_BLUE_IMG
-
             else:
-
                 image = KING_RED_IMG
 
         else:
 
             if self.team == "blue":
-
                 image = PRINCESS_BLUE_IMG
-
             else:
-
                 image = PRINCESS_RED_IMG
 
         image_rect = image.get_rect(
@@ -437,10 +395,6 @@ class Tower:
             image,
             image_rect
         )
-
-        # =================================================
-        # VIDA
-        # =================================================
 
         bar_width = 80
 
@@ -481,70 +435,48 @@ class Tower:
             )
         )
 
-
 # =========================================================
 # UNIDADE
 # =========================================================
+
 
 class Unit:
 
     UNIT_DATA = {
 
         "knight": {
-
             "name": "Cavaleiro",
             "cost": 3,
-
             "hp": 180,
-
             "damage": 28,
-
             "speed": 95,
-
             "range": 42,
-
             "attack_interval": 0.8,
-
             "targets_units": True
         },
 
         "archer": {
-
             "name": "Arqueira",
             "cost": 3,
-
             "hp": 100,
-
             "damage": 20,
-
             "speed": 90,
-
             "range": 125,
-
             "attack_interval": 0.95,
-
             "targets_units": True
         },
 
         "giant": {
-
             "name": "Gigante",
             "cost": 5,
-
             "hp": 420,
-
             "damage": 45,
-
             "speed": 58,
-
             "range": 48,
-
             "attack_interval": 1.2,
-
             "targets_units": False
         }
     }
-
 
     def __init__(
         self,
@@ -564,55 +496,42 @@ class Unit:
         )
 
         self.team = team
+        self.unit_type = unit_type
 
-        self.unit_type = (
-            unit_type
-        )
+        self.name = data["name"]
 
-        self.name = (
-            data["name"]
-        )
+        self.hp = data["hp"]
+        self.max_hp = data["hp"]
 
-        self.hp = (
-            data["hp"]
-        )
+        self.damage = data["damage"]
 
-        self.max_hp = (
-            data["hp"]
-        )
+        self.speed = data["speed"]
+        self.range = data["range"]
 
-        self.damage = (
-            data["damage"]
-        )
+        self.attack_interval = data[
+            "attack_interval"
+        ]
 
-        self.speed = (
-            data["speed"]
-        )
-
-        self.range = (
-            data["range"]
-        )
-
-        self.attack_interval = (
-            data[
-                "attack_interval"
-            ]
-        )
-
-        self.targets_units = (
-            data[
-                "targets_units"
-            ]
-        )
+        self.targets_units = data[
+            "targets_units"
+        ]
 
         self.timer = 0
+
+        # =================================================
+        # COLISÃO
+        # =================================================
+
+        if unit_type == "giant":
+            self.collision_radius = 27
+        else:
+            self.collision_radius = 20
 
         # =================================================
         # ALVOS
         # =================================================
 
         self.unit_target = None
-
         self.tower_target = None
 
         self.locked_on_tower = False
@@ -647,11 +566,8 @@ class Unit:
         # =================================================
 
         if x < ARENA.centerx:
-
             self.lane = "left"
-
         else:
-
             self.lane = "right"
 
         # =================================================
@@ -680,15 +596,12 @@ class Unit:
                 self.right_bridge
             )
 
-        # Chegou ao meio/entrada da ponte?
         self.reached_bridge = False
 
-        # Terminou de atravessar?
         self.crossed_bridge = False
 
-
     # =====================================================
-    # DIREÇÃO PARA FRENTE
+    # DIREÇÃO
     # =====================================================
 
     def forward_value(
@@ -708,9 +621,32 @@ class Unit:
             - self.pos.y
         )
 
+    # =====================================================
+    # REGIÃO DO RIO
+    # =====================================================
+
+    def in_bridge_safe_zone(self):
+
+        top = (
+            ARENA.centery
+            - RIVER_HALF_HEIGHT
+            - BRIDGE_SAFE_MARGIN
+        )
+
+        bottom = (
+            ARENA.centery
+            + RIVER_HALF_HEIGHT
+            + BRIDGE_SAFE_MARGIN
+        )
+
+        return (
+            top
+            <= self.pos.y
+            <= bottom
+        )
 
     # =====================================================
-    # LADO DO RIO
+    # LADOS DO RIO
     # =====================================================
 
     def is_on_own_side(
@@ -734,7 +670,6 @@ class Unit:
             - RIVER_HALF_HEIGHT
         )
 
-
     def is_on_enemy_side(
         self,
         position
@@ -756,9 +691,8 @@ class Unit:
             + RIVER_HALF_HEIGHT
         )
 
-
     # =====================================================
-    # ATUALIZAR STATUS DA PONTE
+    # STATUS DA PONTE
     # =====================================================
 
     def update_bridge_status(self):
@@ -773,11 +707,10 @@ class Unit:
                 <=
                 ARENA.centery
                 - RIVER_HALF_HEIGHT
-                - 20
+                - 25
             ):
 
                 self.crossed_bridge = True
-
                 self.reached_bridge = True
 
         else:
@@ -787,13 +720,11 @@ class Unit:
                 >=
                 ARENA.centery
                 + RIVER_HALF_HEIGHT
-                + 20
+                + 25
             ):
 
                 self.crossed_bridge = True
-
                 self.reached_bridge = True
-
 
     # =====================================================
     # MOVIMENTO
@@ -826,11 +757,8 @@ class Unit:
         if abs(direction.x) > 0.05:
 
             if direction.x > 0:
-
                 self.direction_x = 1
-
             else:
-
                 self.direction_x = -1
 
         movement = (
@@ -857,9 +785,8 @@ class Unit:
 
         self.update_bridge_status()
 
-
     # =====================================================
-    # NAVEGAÇÃO DA PONTE
+    # NAVEGAR NA PONTE
     # =====================================================
 
     def navigate_bridge(
@@ -871,8 +798,8 @@ class Unit:
             return False
 
         # =================================================
-        # ETAPA 1
-        # IR ATÉ O CENTRO DA PONTE
+        # FASE 1:
+        # alinhar X com a ponte
         # =================================================
 
         if not self.reached_bridge:
@@ -883,7 +810,7 @@ class Unit:
                 )
             )
 
-            if distance > 6:
+            if distance > 5:
 
                 self.move_towards(
                     self.bridge_target,
@@ -899,16 +826,22 @@ class Unit:
             self.reached_bridge = True
 
         # =================================================
-        # ETAPA 2
-        # SAIR DO OUTRO LADO
+        # FASE 2:
+        # atravessar reto
         # =================================================
+
+        # enquanto atravessa, força o X
+        # exatamente para o centro da ponte
+        self.pos.x = (
+            self.bridge_target.x
+        )
 
         if self.team == "blue":
 
             exit_y = (
                 ARENA.centery
                 - RIVER_HALF_HEIGHT
-                - 25
+                - 30
             )
 
         else:
@@ -916,7 +849,7 @@ class Unit:
             exit_y = (
                 ARENA.centery
                 + RIVER_HALF_HEIGHT
-                + 25
+                + 30
             )
 
         bridge_exit = pygame.Vector2(
@@ -924,17 +857,22 @@ class Unit:
             exit_y
         )
 
-        distance_exit = (
+        distance = (
             self.pos.distance_to(
                 bridge_exit
             )
         )
 
-        if distance_exit > 5:
+        if distance > 4:
 
             self.move_towards(
                 bridge_exit,
                 dt
+            )
+
+            # força de novo o X
+            self.pos.x = (
+                self.bridge_target.x
             )
 
             return True
@@ -944,14 +882,12 @@ class Unit:
         )
 
         self.crossed_bridge = True
-
         self.reached_bridge = True
 
         return False
 
-
     # =====================================================
-    # MOVIMENTO ATÉ INIMIGO
+    # PERSEGUIR INIMIGO
     # =====================================================
 
     def move_towards_enemy(
@@ -960,31 +896,25 @@ class Unit:
         dt
     ):
 
-        # Se a unidade ainda não atravessou e
-        # o inimigo está no outro lado,
-        # termina a travessia primeiro.
-        if (
-            not self.crossed_bridge
-            and
-            self.is_on_enemy_side(
+        if not self.crossed_bridge:
+
+            if self.is_on_enemy_side(
                 enemy.pos
-            )
-        ):
+            ):
 
-            self.navigate_bridge(
-                dt
-            )
+                self.navigate_bridge(
+                    dt
+                )
 
-            return
+                return
 
         self.move_towards(
             enemy.pos,
             dt
         )
 
-
     # =====================================================
-    # MESMA REGIÃO/LANE
+    # MESMA LANE
     # =====================================================
 
     def enemy_in_lane(
@@ -999,10 +929,8 @@ class Unit:
 
         return (
             horizontal_distance
-            <=
-            LANE_AGGRO_WIDTH
+            <= LANE_AGGRO_WIDTH
         )
-
 
     # =====================================================
     # INIMIGO À FRENTE
@@ -1020,7 +948,6 @@ class Unit:
         )
 
         if forward >= -10:
-
             return True
 
         distance = (
@@ -1029,8 +956,6 @@ class Unit:
             )
         )
 
-        # Se estiver praticamente colado,
-        # pode lutar mesmo ligeiramente atrás.
         if (
             distance
             <=
@@ -1041,9 +966,8 @@ class Unit:
 
         return False
 
-
     # =====================================================
-    # ALVO DE TROPA VÁLIDO
+    # ALVO VÁLIDO
     # =====================================================
 
     def valid_unit_target(
@@ -1094,7 +1018,6 @@ class Unit:
 
         return True
 
-
     # =====================================================
     # PROCURAR TROPA
     # =====================================================
@@ -1107,7 +1030,6 @@ class Unit:
         if not self.targets_units:
 
             self.unit_target = None
-
             return None
 
         if self.valid_unit_target(
@@ -1157,13 +1079,11 @@ class Unit:
             if distance < closest_distance:
 
                 closest = other
-
                 closest_distance = distance
 
         self.unit_target = closest
 
         return closest
-
 
     # =====================================================
     # ESCOLHER TORRE
@@ -1174,7 +1094,6 @@ class Unit:
         towers
     ):
 
-        # Primeiro torre lateral da lane.
         for tower in towers:
 
             if (
@@ -1192,7 +1111,6 @@ class Unit:
 
                 return tower
 
-        # Depois rei.
         for tower in towers:
 
             if (
@@ -1209,9 +1127,8 @@ class Unit:
 
         return None
 
-
     # =====================================================
-    # TORRE BLOQUEIA INIMIGO?
+    # TORRE BLOQUEANDO TROPA
     # =====================================================
 
     def tower_blocks_enemy(
@@ -1230,8 +1147,6 @@ class Unit:
             tower.rect.center
         )
 
-        # Inimigo precisa estar aproximadamente
-        # atrás da torre, não muito para o lado.
         enemy_tower_x = abs(
             enemy.pos.x
             - tower_pos.x
@@ -1258,21 +1173,14 @@ class Unit:
         if enemy_forward < 0:
             return False
 
-        # Torre aparece antes da tropa
-        # no sentido do avanço.
-        if (
+        return (
             tower_forward
             <
             enemy_forward
-        ):
-
-            return True
-
-        return False
-
+        )
 
     # =====================================================
-    # DEVE PRIORIZAR TORRE?
+    # PRIORIDADE TORRE
     # =====================================================
 
     def should_attack_tower_first(
@@ -1284,25 +1192,19 @@ class Unit:
         if tower is None:
             return False
 
-        # Gigante sempre vai para torre.
         if not self.targets_units:
             return True
 
         if enemy is None:
             return True
 
-        if self.tower_blocks_enemy(
+        return self.tower_blocks_enemy(
             tower,
             enemy
-        ):
-
-            return True
-
-        return False
-
+        )
 
     # =====================================================
-    # ANIMAÇÃO ATAQUE
+    # ANIMAÇÃO DE ATAQUE
     # =====================================================
 
     def start_attack_animation(
@@ -1312,7 +1214,6 @@ class Unit:
         self.attack_animation = (
             self.attack_animation_duration
         )
-
 
     # =====================================================
     # ATACAR TROPA
@@ -1331,7 +1232,6 @@ class Unit:
         if enemy.hp <= 0:
 
             self.unit_target = None
-
             return False
 
         distance = (
@@ -1339,10 +1239,6 @@ class Unit:
                 enemy.pos
             )
         )
-
-        # =================================================
-        # ATAQUE
-        # =================================================
 
         if distance <= self.range:
 
@@ -1383,10 +1279,6 @@ class Unit:
 
             return True
 
-        # =================================================
-        # PERSEGUIÇÃO
-        # =================================================
-
         if (
             distance
             <=
@@ -1404,7 +1296,6 @@ class Unit:
 
         return False
 
-
     # =====================================================
     # ATACAR TORRE
     # =====================================================
@@ -1415,20 +1306,16 @@ class Unit:
         projectiles
     ):
 
-        tower = (
-            self.tower_target
-        )
+        tower = self.tower_target
 
         if tower is None:
 
             self.locked_on_tower = False
-
             return False
 
         if not tower.is_alive():
 
             self.locked_on_tower = False
-
             self.tower_target = None
 
             return False
@@ -1487,7 +1374,6 @@ class Unit:
 
         return True
 
-
     # =====================================================
     # UPDATE
     # =====================================================
@@ -1503,14 +1389,10 @@ class Unit:
         if self.hp <= 0:
             return
 
-        # =================================================
-        # STATUS DA PONTE
-        # =================================================
-
         self.update_bridge_status()
 
         # =================================================
-        # ANIMAÇÃO
+        # ANIMAÇÕES
         # =================================================
 
         self.animation_time += dt
@@ -1526,7 +1408,7 @@ class Unit:
                 self.attack_animation = 0
 
         # =================================================
-        # FLASH DE DANO
+        # DANO
         # =================================================
 
         if self.hp < self.last_hp:
@@ -1540,7 +1422,7 @@ class Unit:
             self.hit_flash -= dt
 
         # =================================================
-        # JÁ ESTÁ BATENDO NA TORRE
+        # TORRE TRAVADA
         # =================================================
 
         if self.locked_on_tower:
@@ -1569,7 +1451,7 @@ class Unit:
         )
 
         # =================================================
-        # TORRE NA FRENTE DA TROPA
+        # TORRE ESTÁ NA FRENTE
         # =================================================
 
         if (
@@ -1614,14 +1496,11 @@ class Unit:
 
                 return
 
-            # Torre está bloqueando a tropa.
-            # Ignora a tropa de trás.
             enemy = None
-
             self.unit_target = None
 
         # =================================================
-        # INIMIGO NA FRENTE
+        # TROPA INIMIGA
         # =================================================
 
         if enemy is not None:
@@ -1637,7 +1516,7 @@ class Unit:
         self.unit_target = None
 
         # =================================================
-        # ATRAVESSAR A PONTE
+        # PONTE
         # =================================================
 
         if not self.crossed_bridge:
@@ -1649,7 +1528,7 @@ class Unit:
             return
 
         # =================================================
-        # DEPOIS DA PONTE
+        # TORRE
         # =================================================
 
         target_tower = (
@@ -1680,10 +1559,6 @@ class Unit:
 
             return
 
-        # =================================================
-        # COMEÇOU A ATACAR TORRE
-        # =================================================
-
         self.locked_on_tower = True
 
         self.tower_target = (
@@ -1697,7 +1572,6 @@ class Unit:
             projectiles
         )
 
-
     # =====================================================
     # SPRITE
     # =====================================================
@@ -1705,15 +1579,12 @@ class Unit:
     def get_sprite(self):
 
         if self.unit_type == "knight":
-
             return KNIGHT_IMG
 
         if self.unit_type == "archer":
-
             return ARCHER_IMG
 
         return GIANT_IMG
-
 
     # =====================================================
     # DRAW
@@ -1721,13 +1592,7 @@ class Unit:
 
     def draw(self):
 
-        image = (
-            self.get_sprite()
-        )
-
-        # =================================================
-        # VIRAR
-        # =================================================
+        image = self.get_sprite()
 
         if self.direction_x < 0:
 
@@ -1737,12 +1602,7 @@ class Unit:
                 False
             )
 
-        # =================================================
-        # CAMINHADA
-        # =================================================
-
         offset_y = 0
-
         rotation = 0
 
         if self.is_moving:
@@ -1765,12 +1625,7 @@ class Unit:
                 * 3
             )
 
-        # =================================================
-        # ATAQUE
-        # =================================================
-
         attack_offset = 0
-
         scale_factor = 1.0
 
         if self.attack_animation > 0:
@@ -1812,22 +1667,14 @@ class Unit:
             )
         )
 
-        image = (
-            pygame.transform.rotate(
-                image,
-                rotation
-            )
+        image = pygame.transform.rotate(
+            image,
+            rotation
         )
-
-        # =================================================
-        # DANO
-        # =================================================
 
         if self.hit_flash > 0:
 
-            flash = (
-                image.copy()
-            )
+            flash = image.copy()
 
             flash.fill(
                 (
@@ -1841,10 +1688,6 @@ class Unit:
 
             image = flash
 
-        # =================================================
-        # POSIÇÃO
-        # =================================================
-
         draw_x = self.pos.x
 
         draw_y = (
@@ -1853,50 +1696,25 @@ class Unit:
         )
 
         if self.direction_x > 0:
-
-            draw_x += (
-                attack_offset
-            )
-
+            draw_x += attack_offset
         else:
-
-            draw_x -= (
-                attack_offset
-            )
-
-        # =================================================
-        # SOMBRA
-        # =================================================
+            draw_x -= attack_offset
 
         pygame.draw.ellipse(
             screen,
+            (20, 20, 20),
             (
-                20,
-                20,
-                20
-            ),
-            (
-                int(
-                    self.pos.x
-                    - 22
-                ),
-
-                int(
-                    self.pos.y
-                    + 18
-                ),
-
+                int(self.pos.x - 22),
+                int(self.pos.y + 18),
                 44,
                 13
             )
         )
 
-        rect = (
-            image.get_rect(
-                center=(
-                    int(draw_x),
-                    int(draw_y)
-                )
+        rect = image.get_rect(
+            center=(
+                int(draw_x),
+                int(draw_y)
             )
         )
 
@@ -1905,16 +1723,9 @@ class Unit:
             rect
         )
 
-        # =================================================
-        # TIME
-        # =================================================
-
         if self.team == "blue":
-
             team_color = BLUE
-
         else:
-
             team_color = RED
 
         pygame.draw.circle(
@@ -1927,16 +1738,9 @@ class Unit:
             5
         )
 
-        # =================================================
-        # VIDA
-        # =================================================
-
         if self.unit_type == "giant":
-
             bar_width = 55
-
         else:
-
             bar_width = 45
 
         x = int(
@@ -1981,10 +1785,10 @@ class Unit:
             )
         )
 
-
 # =========================================================
 # GAME
 # =========================================================
+
 
 class Game:
 
@@ -2049,7 +1853,6 @@ class Game:
         )
 
         self.towers = [
-
             self.blue_left,
             self.blue_right,
             self.blue_king,
@@ -2067,9 +1870,7 @@ class Game:
 
         self.max_elixir = 10.0
 
-        self.normal_elixir_rate = (
-            0.6
-        )
+        self.normal_elixir_rate = 0.6
 
         self.elixir_rate = (
             self.normal_elixir_rate
@@ -2084,7 +1885,6 @@ class Game:
         self.double_elixir = False
 
         self.blue_crowns = 0
-
         self.red_crowns = 0
 
         # =================================================
@@ -2102,9 +1902,7 @@ class Game:
         self.card_rects = []
 
         card_width = 170
-
         card_height = 65
-
         gap = 15
 
         total_width = (
@@ -2127,11 +1925,8 @@ class Game:
                         card_width
                         + gap
                     ),
-
                     710,
-
                     card_width,
-
                     card_height
                 )
             )
@@ -2140,9 +1935,7 @@ class Game:
         # IA
         # =================================================
 
-        self.enemy_spawn_timer = (
-            2.5
-        )
+        self.enemy_spawn_timer = 2.5
 
         # =================================================
         # ESTADO
@@ -2152,7 +1945,6 @@ class Game:
 
         self.winner = None
 
-
     # =====================================================
     # RESET
     # =====================================================
@@ -2161,6 +1953,170 @@ class Game:
 
         self.__init__()
 
+    # =====================================================
+    # SEPARAÇÃO ENTRE TROPAS
+    # =====================================================
+
+    def resolve_unit_separation(self):
+
+        count = len(
+            self.units
+        )
+
+        for i in range(count):
+
+            a = self.units[i]
+
+            if a.hp <= 0:
+                continue
+
+            for j in range(
+                i + 1,
+                count
+            ):
+
+                b = self.units[j]
+
+                if b.hp <= 0:
+                    continue
+
+                # =========================================
+                # IMPORTANTE:
+                # SEM COLISÃO PERTO DA PONTE
+                # =========================================
+
+                if (
+                    a.in_bridge_safe_zone()
+                    or
+                    b.in_bridge_safe_zone()
+                ):
+
+                    continue
+
+                delta = (
+                    b.pos
+                    - a.pos
+                )
+
+                distance = (
+                    delta.length()
+                )
+
+                minimum_distance = (
+                    a.collision_radius
+                    +
+                    b.collision_radius
+                )
+
+                minimum_distance *= 0.80
+
+                if (
+                    distance
+                    >=
+                    minimum_distance
+                ):
+
+                    continue
+
+                if distance < 0.001:
+
+                    if (
+                        (i + j) % 2
+                        == 0
+                    ):
+
+                        direction = pygame.Vector2(
+                            1,
+                            0
+                        )
+
+                    else:
+
+                        direction = pygame.Vector2(
+                            -1,
+                            0
+                        )
+
+                    distance = 0.001
+
+                else:
+
+                    direction = (
+                        delta.normalize()
+                    )
+
+                overlap = (
+                    minimum_distance
+                    - distance
+                )
+
+                push = (
+                    direction
+                    * overlap
+                    * 0.30
+                )
+
+                # Se uma unidade já está atacando
+                # uma torre, evita empurrá-la muito.
+
+                if (
+                    a.locked_on_tower
+                    and
+                    not b.locked_on_tower
+                ):
+
+                    b.pos += (
+                        push * 1.5
+                    )
+
+                elif (
+                    b.locked_on_tower
+                    and
+                    not a.locked_on_tower
+                ):
+
+                    a.pos -= (
+                        push * 1.5
+                    )
+
+                else:
+
+                    a.pos -= push
+                    b.pos += push
+
+                margin = 15
+
+                a.pos.x = max(
+                    ARENA.left + margin,
+                    min(
+                        ARENA.right - margin,
+                        a.pos.x
+                    )
+                )
+
+                a.pos.y = max(
+                    ARENA.top + margin,
+                    min(
+                        ARENA.bottom - margin,
+                        a.pos.y
+                    )
+                )
+
+                b.pos.x = max(
+                    ARENA.left + margin,
+                    min(
+                        ARENA.right - margin,
+                        b.pos.x
+                    )
+                )
+
+                b.pos.y = max(
+                    ARENA.top + margin,
+                    min(
+                        ARENA.bottom - margin,
+                        b.pos.y
+                    )
+                )
 
     # =====================================================
     # SELECIONAR CARTA
@@ -2185,9 +2141,7 @@ class Game:
                     == card_type
                 ):
 
-                    self.selected_card = (
-                        None
-                    )
+                    self.selected_card = None
 
                 else:
 
@@ -2198,7 +2152,6 @@ class Game:
                 return True
 
         return False
-
 
     # =====================================================
     # PLAYER
@@ -2228,9 +2181,7 @@ class Game:
             self.selected_card
         ]
 
-        cost = (
-            data["cost"]
-        )
+        cost = data["cost"]
 
         if self.elixir < cost:
             return
@@ -2248,34 +2199,26 @@ class Game:
 
         self.selected_card = None
 
-
     # =====================================================
     # IA
     # =====================================================
 
     def spawn_enemy_unit(self):
 
-        unit_type = (
-            random.choice(
-                self.card_types
-            )
+        unit_type = random.choice(
+            self.card_types
         )
 
-        lane = (
-            random.choice(
-                [
-                    "left",
-                    "right"
-                ]
-            )
+        lane = random.choice(
+            [
+                "left",
+                "right"
+            ]
         )
 
         if lane == "left":
-
             x = 320
-
         else:
-
             x = 730
 
         y = 200
@@ -2288,7 +2231,6 @@ class Game:
                 unit_type
             )
         )
-
 
     # =====================================================
     # EVENTOS
@@ -2303,12 +2245,10 @@ class Game:
             event.type
             == pygame.KEYDOWN
             and
-            event.key
-            == pygame.K_r
+            event.key == pygame.K_r
         ):
 
             self.reset()
-
             return
 
         if self.game_over:
@@ -2318,8 +2258,7 @@ class Game:
             event.type
             == pygame.MOUSEBUTTONDOWN
             and
-            event.button
-            == 1
+            event.button == 1
         ):
 
             if self.try_select_card(
@@ -2331,7 +2270,6 @@ class Game:
             self.spawn_player_unit(
                 event.pos
             )
-
 
     # =====================================================
     # COROAS
@@ -2349,29 +2287,19 @@ class Game:
 
             tower.crown_counted = True
 
-            if (
-                tower.tower_type
-                == "princess"
-            ):
+            if tower.tower_type == "princess":
 
                 if tower.team == "red":
-
                     self.blue_crowns += 1
-
                 else:
-
                     self.red_crowns += 1
 
             else:
 
                 if tower.team == "red":
-
                     self.blue_crowns = 3
-
                 else:
-
                     self.red_crowns = 3
-
 
     # =====================================================
     # FIM POR TEMPO
@@ -2401,7 +2329,6 @@ class Game:
 
         self.game_over = True
 
-
     # =====================================================
     # UPDATE
     # =====================================================
@@ -2421,11 +2348,10 @@ class Game:
         self.match_time -= dt
 
         if self.match_time < 0:
-
             self.match_time = 0
 
         # =================================================
-        # ELIXIR x2
+        # ELIXIR DUPLO
         # =================================================
 
         if (
@@ -2495,6 +2421,12 @@ class Game:
             )
 
         # =================================================
+        # SEPARAÇÃO
+        # =================================================
+
+        self.resolve_unit_separation()
+
+        # =================================================
         # TORRES
         # =================================================
 
@@ -2527,7 +2459,7 @@ class Game:
         ]
 
         # =================================================
-        # REMOVER MORTOS
+        # MORTOS
         # =================================================
 
         self.units = [
@@ -2553,7 +2485,6 @@ class Game:
         if not self.red_king.is_alive():
 
             self.game_over = True
-
             self.winner = "Você"
 
             return
@@ -2561,19 +2492,13 @@ class Game:
         if not self.blue_king.is_alive():
 
             self.game_over = True
-
             self.winner = "Inimigo"
 
             return
 
-        # =================================================
-        # TEMPO
-        # =================================================
-
         if self.match_time <= 0:
 
             self.finish_by_time()
-
 
     # =====================================================
     # ARENA
@@ -2600,7 +2525,8 @@ class Game:
 
             ARENA.width,
 
-            RIVER_HALF_HEIGHT * 2
+            RIVER_HALF_HEIGHT
+            * 2
         )
 
         pygame.draw.rect(
@@ -2617,7 +2543,8 @@ class Game:
 
             110,
 
-            RIVER_HALF_HEIGHT * 2
+            RIVER_HALF_HEIGHT
+            * 2
         )
 
         bridge_right = pygame.Rect(
@@ -2628,7 +2555,8 @@ class Game:
 
             110,
 
-            RIVER_HALF_HEIGHT * 2
+            RIVER_HALF_HEIGHT
+            * 2
         )
 
         pygame.draw.rect(
@@ -2642,7 +2570,6 @@ class Game:
             BRIDGE,
             bridge_right
         )
-
 
     # =====================================================
     # CARTAS
@@ -2684,24 +2611,18 @@ class Game:
             )
 
             if card_type == "knight":
-
                 icon = KNIGHT_IMG
 
             elif card_type == "archer":
-
                 icon = ARCHER_IMG
 
             else:
-
                 icon = GIANT_IMG
 
             icon_small = (
                 pygame.transform.smoothscale(
                     icon,
-                    (
-                        48,
-                        48
-                    )
+                    (48, 48)
                 )
             )
 
@@ -2741,7 +2662,6 @@ class Game:
                 )
             )
 
-
     # =====================================================
     # TEMPO
     # =====================================================
@@ -2768,16 +2688,11 @@ class Game:
             f"{minutes:02d}:{seconds:02d}"
         )
 
-
     # =====================================================
     # UI
     # =====================================================
 
     def draw_ui(self):
-
-        # =================================================
-        # ELIXIR
-        # =================================================
 
         text = FONT.render(
             f"Elixir: {self.elixir:.1f}/10",
@@ -2792,10 +2707,6 @@ class Game:
                 730
             )
         )
-
-        # =================================================
-        # COROAS
-        # =================================================
 
         blue_text = FONT.render(
             f"Você {self.blue_crowns} Coroas",
@@ -2828,10 +2739,6 @@ class Game:
             )
         )
 
-        # =================================================
-        # TEMPO
-        # =================================================
-
         timer = BIG.render(
             self.get_time_text(),
             True,
@@ -2847,10 +2754,6 @@ class Game:
                 )
             )
         )
-
-        # =================================================
-        # ELIXIR DUPLO
-        # =================================================
 
         if self.double_elixir:
 
@@ -2869,10 +2772,6 @@ class Game:
                     )
                 )
             )
-
-        # =================================================
-        # GAME OVER
-        # =================================================
 
         if self.game_over:
 
@@ -2962,7 +2861,6 @@ class Game:
                 )
             )
 
-
     # =====================================================
     # DRAW
     # =====================================================
@@ -2972,15 +2870,12 @@ class Game:
         self.draw_arena()
 
         for tower in self.towers:
-
             tower.draw()
 
         for unit in self.units:
-
             unit.draw()
 
         for projectile in self.projectiles:
-
             projectile.draw()
 
         self.draw_cards()
@@ -3022,9 +2917,7 @@ def main():
                     event
                 )
 
-        game.update(
-            dt
-        )
+        game.update(dt)
 
         game.draw()
 
